@@ -1,0 +1,234 @@
+1. Find courses that ran in Fall 2009 or in Spring 2010 (UNION ALL to retain duplicates)
+
+Ans: 
+
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Fall' AND YEAR = 2009
+UNION ALL
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Spring' AND YEAR = 2010;
+
+
+2. Find courses that ran in Fall 2009 and in Spring 2010 (INTERSECT ALL to retain duplicates)
+
+Ans: 
+
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Fall' AND YEAR = 2009
+INTERSECT
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Spring' AND YEAR = 2010;
+
+
+3. Find courses that ran in Fall 2009 but not in Spring 2010 (MINUS)
+
+Ans: 
+
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Fall' AND YEAR = 2009
+MINUS
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Spring' AND YEAR = 2010;
+
+
+4. Find the name of the course for which none of the students registered
+
+Ans: 
+
+SELECT TITLE 
+FROM COURSE 
+WHERE COURSE_ID NOT IN (SELECT DISTINCT COURSE_ID FROM TAKES);
+
+
+5. Find courses offered in Fall 2009 and in Spring 2010
+
+Ans: 
+
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE (SEMESTER = 'Fall' AND YEAR = 2009) 
+AND COURSE_ID IN (
+    SELECT COURSE_ID FROM SECTION 
+    WHERE SEMESTER = 'Spring' AND YEAR = 2010
+);
+
+6. Find the total number of students who have taken a course taught by the instructor with ID 10101
+
+Ans: 
+
+SELECT COUNT(DISTINCT T.ID) 
+FROM TAKES T 
+WHERE T.COURSE_ID IN (
+    SELECT COURSE_ID FROM TEACHES 
+    WHERE ID = 10101
+);
+
+
+7. Find courses offered in Fall 2009 but not in Spring 2010
+
+Ans: 
+
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE SEMESTER = 'Fall' AND YEAR = 2009 
+AND COURSE_ID NOT IN (
+    SELECT COURSE_ID FROM SECTION 
+    WHERE SEMESTER = 'Spring' AND YEAR = 2010
+);
+
+
+8. Find the names of all students whose name is the same as an instructorâ€™s name
+
+Ans: 
+
+SELECT NAME 
+FROM STUDENT 
+WHERE NAME IN (
+    SELECT NAME FROM INSTRUCTOR
+);
+
+
+9. Find names of instructors with salary greater than that of at least one instructor in the Biology department
+
+Ans: 
+
+SELECT NAME 
+FROM INSTRUCTOR 
+WHERE SALARY > SOME (
+    SELECT SALARY FROM INSTRUCTOR 
+    WHERE DEPT_NAME = 'Biology'
+);
+
+
+10. Find names of all instructors whose salary is greater than the salary of all instructors in the Biology department
+
+Ans: 
+
+SELECT NAME 
+FROM INSTRUCTOR 
+WHERE SALARY > ALL (
+    SELECT SALARY FROM INSTRUCTOR 
+    WHERE DEPT_NAME = 'Biology'
+);
+
+
+11. Find the departments with the highest average salary
+
+Ans: 
+
+SELECT DEPT_NAME 
+FROM INSTRUCTOR 
+GROUP BY DEPT_NAME 
+HAVING AVG(SALARY) = (
+    SELECT MAX(AVG(SALARY)) 
+    FROM INSTRUCTOR 
+    GROUP BY DEPT_NAME
+);
+
+
+12. Find the names of departments whose budget is lesser than the average salary of all instructors
+
+Ans: 
+
+SELECT DEPT_NAME 
+FROM DEPARTMENT 
+WHERE BUDGET < (
+    SELECT AVG(SALARY) FROM INSTRUCTOR
+);
+
+
+13. Find all courses taught in both Fall 2009 and Spring 2010
+
+Ans: 
+
+SELECT COURSE_ID
+FROM SECTION S1
+WHERE SEMESTER = 'Fall' AND YEAR = 2009
+AND EXISTS (
+    SELECT * FROM SECTION S2
+    WHERE S2.COURSE_ID = S1.COURSE_ID 
+    AND S2.SEMESTER = 'Spring' AND S2.YEAR = 2010
+);
+
+14. Find all students who have taken all courses offered in the Biology department
+
+Ans: 
+
+SELECT S.ID 
+FROM STUDENT S
+WHERE NOT EXISTS (
+    SELECT COURSE_ID FROM COURSE 
+    WHERE DEPT_NAME = 'Bio'
+    MINUS
+    SELECT COURSE_ID FROM TAKES 
+    WHERE S.ID = TAKES.ID
+);
+
+
+15. Find all courses that were offered at most once in 2009
+
+Ans: 
+
+SELECT COURSE_ID 
+FROM SECTION 
+WHERE YEAR = 2009
+GROUP BY COURSE_ID
+HAVING COUNT(*) <= 1;
+
+
+16. Find all students who have opted for at least two courses offered by CSE department
+
+Ans: 
+
+SELECT T.ID 
+FROM TAKES T, COURSE C
+WHERE T.COURSE_ID = C.COURSE_ID 
+AND C.DEPT_NAME = 'Comp. Sci.'
+GROUP BY T.ID
+HAVING COUNT(T.COURSE_ID) >= 2;
+
+
+17. Find the average instructor salary for departments where the average salary is greater than 42000
+
+Ans: 
+
+SELECT DEPT_NAME, AVG(SALARY) AS AVG_SALARY
+FROM INSTRUCTOR
+GROUP BY DEPT_NAME
+HAVING AVG(SALARY) > 42000;
+
+
+18. Create a view all_courses for Physics department sections in Fall 2009
+
+Ans: 
+
+CREATE VIEW ALL_COURSES AS
+SELECT COURSE_ID, SEC_ID, BUILDING, ROOM_NUMBER
+FROM SECTION
+WHERE COURSE_ID IN (
+    SELECT COURSE_ID FROM COURSE
+    WHERE DEPT_NAME = 'Physics'
+) 
+AND SEMESTER = 'Fall' AND YEAR = 2009;
+
+
+19. Select all courses from the all_courses view
+
+Ans: 
+
+SELECT * FROM ALL_COURSES;
+
+20. Create a view department_total_salary consisting of department name and total salary
+
+Ans: 
+
+CREATE VIEW DEPARTMENT_TOTAL_SALARY AS
+SELECT DEPT_NAME, SUM(SALARY) AS TOTAL_SALARY
+FROM INSTRUCTOR
+GROUP BY DEPT_NAME;

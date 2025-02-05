@@ -1,0 +1,57 @@
+1) Create a table employee with ( emp_no, emp_name, emp_address) 
+
+Ans: CREATE TABLE EMPLOYEE( EMP_NO NUMBER(5) PRIMARY KEY, EMP_NAME VARCHAR(20), EMP_ADDRESS VARCHAR(20));
+
+
+2) Insert five employees information. 
+
+Ans: 
+
+INSERT INTO EMPLOYEE VALUES (1234, 'ABC', 'BANGLORE');
+INSERT INTO EMPLOYEE VALUES (1235, 'DEF', 'MYSORE');
+INSERT INTO EMPLOYEE VALUES (1236, 'GHI', 'MANIPAL');
+INSERT INTO EMPLOYEE VALUES (1237, 'LMN', 'UDUPI');
+INSERT INTO EMPLOYEE VALUES (1238, 'XYZ', 'CHENNAI');
+
+
+3)  Display names of all employees. 
+
+Ans: SELECT EMP_NAME FROM EMPLOYEE;
+
+
+4) Display all the employees from ‘MANIPAL’. 
+
+Ans: SELECT * FROM EMPLOYEE WHERE EMP_ADDRESS = 'MANIPAL';
+
+
+5) Add a column named salary to employee table. 
+
+Ans: ALTER TABLE EMPLOYEE ADD (SALARY NUMBER(10,2));
+
+
+6) Assign the salary for all employees. 
+
+Ans:
+
+UPDATE EMPLOYEE SET SALARY = 10000 WHERE EMP_NO = 1234;
+UPDATE EMPLOYEE SET SALARY = 10000;
+
+
+7)  View the structure of the table employee using describe. 
+
+Ans: DESC EMPLOYEE;
+
+
+8) Delete all the employees from ‘MANGALORE’ 
+
+Ans: DELETE FROM EMPLOYEE WHERE EMP_ADDRESS = 'UDUPI';
+
+
+9)  Rename employee as employee1.
+
+Ans: RENAME EMPLOYEE TO EMPLOYEE1;
+
+
+10)  Drop the table employee1.
+
+Ans: DROP TABLE EMPLOYEE1;

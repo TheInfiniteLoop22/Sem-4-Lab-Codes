@@ -1,0 +1,78 @@
+9) List all Students with names and their department names.
+
+Ans: SELECT NAME,DEPT_NAME FROM STUDENT;
+
+10) List all instructors in CSE department. 
+
+Ans: SELECT NAME FROM INSTRUCTOR WHERE DEPT_NAME='Comp. Sci.';
+
+11) Find the names of courses in CSE department which have 3 credits. 
+
+Ans: SELECT TITLE FROM COURSE WHERE DEPT_NAME='Comp. Sci.' AND CREDITS=3;
+
+12) For the student with ID 12345 (or any other value), show all course-id and title of all 
+courses registered for by the student.
+
+Ans: SELECT C.COURSE_ID, C.TITLE FROM COURSE C JOIN TAKES T ON C.COURSE_ID=T.COURSE_ID WHERE T.ID=12345;
+
+13) List all the instructors whose salary is in between 40000 and 90000. 
+
+Ans: SELECT NAME FROM INSTRUCTOR WHERE SALARY BETWEEN 40000 AND 90000;
+
+14) Display the IDs of all instructors who have never taught a course. 
+
+Ans: SELECT ID FROM INSTRUCTORS WHERE ID NOT IN (SELECT DISTINCT ID FROM TEACHES);
+
+15) Find the student names, course names, and the year, for all students those who have 
+attended classes in room-number 303.
+
+Ans: SELECT P.NAME,T.ID,S.YEAR,T.COURSE_ID,S.SEC_ID FROM TAKES T, SECTION S, STUDENT P WHERE T.COURSE_ID=S.COURSE_ID AND P.ID=T.ID AND ROOM_NUMBER=514;
+
+16) For all students who have opted courses in 2015, find their names and course id’s 
+with the attribute course title replaced by c-name.
+
+Ans: SELECT S.NAME,T.COURSE_ID,C.TITLE AS C_NAME FROM STUDENT S,TAKES T, COURSE C WHERE S.ID=T.ID AND T.YEAR=2010 AND C.COURSE.ID=T.COURSE.ID;
+
+17) Find the names of all instructors whose salary is greater than the salary of at least 
+one instructor of CSE department and salary replaced by inst-salary.
+
+Ans: SELECT DISTINCT S.NAME,S.SALARY AS INST_SALARY FROM INSTRUCTOR T.INTRUCTOR S WHERE T.SALARY>S.SALARY AND T.DEPT_NAME='Comp. Sci.';
+
+18) Find the names of all instructors whose department name includes the substring 
+‘ch’.
+
+Ans: SELECT NAME FROM STUDENT WHERE NAME LIKE '%AN%';
+
+19) List the student names along with the length of the student names. 
+
+Ans: SELECT NAME, LENGTH(NAME) FROM STUDENT;
+
+20) List the department names and 3 characters from 3rd position of each department name
+
+Ans: SELECT DISTINCT(DEPT_NAME), SUBSTR(DEPT_NAME,3) AS SUBSTR FROM DEPARTMENT;
+
+21) List the instructor names in upper case.
+
+Ans: SELECT UPPER(NAME) FROM INSTRUCTOR;
+
+22) Replace NULL with value1(say 0) for a column in any of the table
+
+Ans: SELECT NVL(GRADE,'B') FROM TAKES WHERE ID=98988;
+
+23) Display the salary and salary/3 rounded to nearest hundred from Instructor. 
+
+Ans: SELECT SALARY,ROUND(SALARY/3,0) FROM INSTRUCTOR;
+
+24) Display the birth date of all the employees in the following format: 
+ ‘DD-MON-YYYY’ 
+ ‘DD-MON-YY’ 
+ ‘DD-MM-YY’
+
+Ans: SELECT TO_CHAR(BIRTH_DATE, 'DD-MON-YYYY') AS BIRTH_DATE_FORMAT_1 FROM EMPLOYEE;
+
+25) List the employee names and the year (fully spelled out) in which they are born 
+ ‘YEAR’ 
+ ‘Year’ 
+ ‘year’
+
+Ans: SELECT EMP_NAME, TO_CHAR(BIRTH_DATE, 'YYYY') AS YEAR FROM EMPLOYEE;

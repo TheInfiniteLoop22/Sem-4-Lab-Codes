@@ -1,0 +1,151 @@
+1)Retrieve the birth date and address of the employee(s) whose name is ‘John B. 
+Smith’. Retrieve the name and address of all employees who work for the 
+‘Research’ department. 
+
+Ans:
+
+select Bdate, address
+from employee
+where Fname='John' and Minit = 'B' and Lname = 'Smith';
+
+select Fname, Minit, Lname, address
+from employee
+where dno = (select dnumber from department where dname='Research');
+
+
+2)For every project located in ‘Stanford’, list the project number, the controlling  
+department number, and the department manager’s last name, address, and birth 
+date. 
+
+Ans:
+
+with dept_man as (select employee.dno d_num, lname, address, bdate from employee, department where employee.ssn = department.mgr_ssn)
+select pnumber, project.dnum, lname, address, bdate
+from project, dept_man
+where plocation='Stafford' and dept_man.d_num = project.dnum;
+
+
+3)For each employee, retrieve the employee’s first and last name and the first and 
+last name of his or her immediate supervisor.
+
+Ans:
+
+select e1.fname, e1.lname, e2.fname, e2.lname
+from employee e1, employee e2
+where e1.super_ssn = e2.ssn;
+
+
+4)Make a list of all project numbers for projects that involve an employee whose 
+last name is ‘Smith’, either as a worker or as a manager of the department that 
+controls the project
+
+Ans:
+
+select distinct pnumber
+from project, employee
+where dno=dnum and lname='Smith';
+
+
+5)Show the resulting salaries if every employee working on the ‘ProductX’ project 
+is given a 10 percent raise. 
+
+Ans:
+
+select salary*1.1 raised_sal
+from employee, works_on, project
+where ssn = essn and pno=pnumber and pname='ProductX';
+
+
+6)Retrieve a list of employees and the projects they are working on, ordered by 
+department and, within each department, ordered alphabetically by last name, then 
+first name. 
+
+Ans:
+
+select dname, fname, lname, pname
+from employee, works_on, project, department
+where ssn = essn and pno=pnumber and dno=dnumber
+order by dname, lname, fname asc;
+
+
+7)Retrieve the name of each employee who has a dependent with the same first name 
+and is the same sex as the employee.
+
+Ans:
+
+select fname, minit, lname
+from employee, dependent
+where ssn = essn and fname=dependent_name and employee.sex=dependent.sex;
+
+
+8)Retrieve the names of employees who have no dependents. 
+
+Ans:
+
+select distinct fname, minit, lname
+from employee, dependent
+where ssn not in(select distinct essn from dependent);
+
+
+9)List the names of managers who have at least one dependent. 
+
+Ans:
+
+select distinct fname, minit, lname
+from employee, dependent, department
+where essn = ssn and dno=dnumber and mgr_ssn = ssn and mgr_ssn in(select distinct essn from dependent);
+
+
+10) Find the sum of the salaries of all employees, the maximum salary, the minimum 
+salary, and the average salary.
+
+Ans:
+
+select sum(salary) sum_sal, max(salary) max_sal, min(salary) min_sal, avg(salary) avg_sal
+from employee;
+
+
+11) For each project, retrieve the project number, the project name, and the number 
+of employees who work on that project.
+
+Ans:
+
+select pname, pnumber, count(essn) no_of_employees
+from project, works_on
+where pno=pnumber
+group by(pnumber, pname);
+
+
+12)For each project on which more than two employees work, retrieve the project 
+number, the project name, and the number of employees who work on the 
+project. 
+
+Ans:
+
+select pname, pnumber, count(essn) no_of_employees
+from project, works_on
+where pno=pnumber
+group by(pnumber, pname)
+having count(essn)>2;
+
+
+13)For each department that has more than five employees, retrieve the department 
+number and the number of its employees who are making more than 40,000.
+
+Ans:
+
+with dept as (select dno from employee group by dno having count(ssn)>3)
+select employee.dno, count(ssn) no_of_employee
+from employee, dept
+where salary>40000 and employee.dno=dept.dno
+group by employee.dno;
+
+
+
+ADDITIONAL EXERCISE: 
+1. Find the names of employees who work on all the projects controlled by 
+department number 5. 
+2. Find the names of all employees who have a higher salary than some instructor 
+in ‘Research’ department. 
+3. Find the total number of (distinct) employees who have worked on project 
+‘ProductX’.
