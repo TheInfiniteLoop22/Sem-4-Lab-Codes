@@ -1,0 +1,348 @@
+Q1.
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+
+#define BUF_SIZE 1024
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        write(2, "Usage: ./mygrep <word> <filename>\n", 34);
+        exit(1);
+    }
+
+    char *word = argv[1];
+    char *filename = argv[2];
+    char buffer[BUF_SIZE];
+    char line[BUF_SIZE];
+    int fd, bytes_read, idx = 0;
+
+    fd = open(filename, O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        exit(1);
+    }
+
+    while ((bytes_read = read(fd, buffer, BUF_SIZE)) > 0) {
+        for (int i = 0; i < bytes_read; i++) {
+            if (buffer[i] == '\n' || idx >= BUF_SIZE - 1) {
+                line[idx] = '\0'; // terminate string
+                if (strstr(line, word) != NULL) { // word found
+                    write(1, line, strlen(line));
+                    write(1, "\n", 1);
+                }
+                idx = 0; // reset for next line
+            } else {
+                line[idx++] = buffer[i];
+            }
+        }
+    }
+
+    close(fd);
+    return 0;
+}
+
+make a file called data.txt
+---------------------------
+hello world
+grep example
+this is cool
+world is beautiful
+
+Run
+---
+./mygrep world data.txt
+
+Output
+------
+hello world
+world is beautiful
+
+---------------------------------------------------------
+
+Q2.
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#define BUF_SIZE 1024
+#define LINES_PER_PAGE 20
+
+// Function to wait for a key press
+void wait_for_key() {
+    char c;
+    write(1, "\n-- More -- (press ENTER to continue)\n", 38);
+    read(0, &c, 1); // waits for user input
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        write(2, "Usage: ./mymore <file1> [file2 ...]\n", 36);
+        exit(1);
+    }
+
+    char buf[BUF_SIZE];
+    int fd, bytes, i;
+    int line_cnt, line_num;
+
+    for (int fileidx = 1; fileidx < argc; fileidx++) {
+        fd = open(argv[fileidx], O_RDONLY);
+        if (fd == -1) {
+            perror("open");
+            continue;
+        }
+
+        line_cnt = 0;
+        line_num = 1; // start numbering from 1
+
+        // Print number for very first line before reading any data
+        char numbuf[32];
+        int numlen = snprintf(numbuf, sizeof(numbuf), "%4d: ", line_num++);
+        write(1, numbuf, numlen);
+
+        while ((bytes = read(fd, buf, BUF_SIZE)) > 0) {
+            for (i = 0; i < bytes; i++) {
+                write(1, &buf[i], 1); // print character
+
+                if (buf[i] == '\n') {
+                    line_cnt++;
+
+                    // pause every 20 lines
+                    if (line_cnt == LINES_PER_PAGE) {
+                        wait_for_key();
+                        line_cnt = 0;
+                    }
+
+                    // print the next line number
+                    numlen = snprintf(numbuf, sizeof(numbuf), "%4d: ", line_num++);
+                    write(1, numbuf, numlen);
+                }
+            }
+        }
+        close(fd);
+    }
+
+    return 0;
+}
+--------------
+make two files bigfile1.txt and bigfile2.txt
+
+The sky shimmered with a thousand colors at dusk.
+A curious cat wandered through the quiet garden.
+Forgotten letters lay beneath the old oak tree.
+Rain tapped gently on the windowpane, soothing the night.
+She danced alone in the moonlight, lost in her dreams.
+The scent of fresh bread filled the cozy bakery.
+Leaves rustled as the wind whispered ancient secrets.
+Stars blinked awake one by one in the darkening sky.
+Time seemed to slow down in the sleepy town square.
+A lone boat drifted silently on the misty lake.
+The old clock tower chimed midnight with a deep echo.
+Wildflowers burst into bloom, painting the meadow with color.
+His laughter echoed through the empty halls.
+A paper crane folded with care held a secret message.
+The rusty bicycle leaned against the cracked brick wall.
+Shadows played tricks beneath the flickering streetlight.
+A warm breeze carried the scent of jasmine and pine.
+Snowflakes fell softly, blanketing the earth in white.
+The old book's pages whispered stories long forgotten.
+Children’s laughter echoed from the distant playground.
+The golden retriever wagged its tail happily by the door.
+Morning dew sparkled on the blades of grass like tiny jewels.
+A single candle flickered in the darkened room.
+The city lights twinkled like fireflies in the night.
+He traced the map with trembling fingers, heart racing.
+
+and
+
+Morning light filtered through the lace curtains.
+The old typewriter clattered under his fingers.
+Crickets sang beneath a velvet night sky.
+The scent of vanilla and cinnamon filled the kitchen.
+A small boat rocked gently in the harbor.
+The winding path disappeared into the dense forest.
+She found a forgotten photograph in the attic.
+The scent of rain mixed with the earthy smell of soil.
+A paper airplane soared across the classroom.
+The lighthouse beacon cut through the fog.
+Leaves crunched underfoot on the autumn trail.
+A child’s giggle floated over the playground fence.
+The cool breeze carried whispers of the sea.
+His shadow stretched long across the sunlit street.
+The bakery’s window displayed an array of colorful pastries.
+Snow blanketed the silent town like a soft quilt.
+A violin’s tune drifted from the open window.
+The old bridge creaked as the wind blew.
+Morning dew clung to spiderwebs like tiny diamonds.
+The scent of pine trees filled the mountain air.
+A glowing campfire flickered under the starry sky.
+She wrote poetry by candlelight late into the night.
+The sound of distant thunder rumbled softly.
+Butterflies flitted among wildflowers in the meadow.
+A stray dog followed quietly behind the traveler.
+
+-------------------
+Output:
+   1: The sky shimmered with a thousand colors at dusk.
+   2: A curious cat wandered through the quiet garden.
+   3: Forgotten letters lay beneath the old oak tree.
+   4: Rain tapped gently on the windowpane, soothing the night.
+   5: She danced alone in the moonlight, lost in her dreams.
+   6: The scent of fresh bread filled the cozy bakery.
+   7: Leaves rustled as the wind whispered ancient secrets.
+   8: Stars blinked awake one by one in the darkening sky.
+   9: Time seemed to slow down in the sleepy town square.
+  10: A lone boat drifted silently on the misty lake.
+  11: The old clock tower chimed midnight with a deep echo.
+  12: Wildflowers burst into bloom, painting the meadow with color.
+  13: His laughter echoed through the empty halls.
+  14: A paper crane folded with care held a secret message.
+  15: The rusty bicycle leaned against the cracked brick wall.
+  16: Shadows played tricks beneath the flickering streetlight.
+  17: A warm breeze carried the scent of jasmine and pine.
+  18: Snowflakes fell softly, blanketing the earth in white.
+  19: The old book's pages whispered stories long forgotten.
+  20: Children’s laughter echoed from the distant playground.
+
+-- More -- (press ENTER to continue)
+
+  21: The golden retriever wagged its tail happily by the door.
+  22: Morning dew sparkled on the blades of grass like tiny jewels.
+  23: A single candle flickered in the darkened room.
+  24: The city lights twinkled like fireflies in the night.
+  25: He traced the map with trembling fingers, heart racing.
+  26:    1: Morning light filtered through the lace curtains.
+   2: The old typewriter clattered under his fingers.
+   3: Crickets sang beneath a velvet night sky.
+   4: The scent of vanilla and cinnamon filled the kitchen.
+   5: A small boat rocked gently in the harbor.
+   6: The winding path disappeared into the dense forest.
+   7: She found a forgotten photograph in the attic.
+   8: The scent of rain mixed with the earthy smell of soil.
+   9: A paper airplane soared across the classroom.
+  10: The lighthouse beacon cut through the fog.
+  11: Leaves crunched underfoot on the autumn trail.
+  12: A child’s giggle floated over the playground fence.
+  13: The cool breeze carried whispers of the sea.
+  14: His shadow stretched long across the sunlit street.
+  15: The bakery’s window displayed an array of colorful pastries.
+  16: Snow blanketed the silent town like a soft quilt.
+  17: A violin’s tune drifted from the open window.
+  18: The old bridge creaked as the wind blew.
+  19: Morning dew clung to spiderwebs like tiny diamonds.
+  20: The scent of pine trees filled the mountain air.
+
+-- More -- (press ENTER to continue)
+
+  21: A glowing campfire flickered under the starry sky.
+  22: She wrote poetry by candlelight late into the night.
+  23: The sound of distant thunder rumbled softly.
+  24: Butterflies flitted among wildflowers in the meadow.
+  25: A stray dog followed quietly behind the traveler.
+
+----------------------------------------------------------
+Q3.
+//Demonstrate the use of different conversion specifiers and resulting output to allow
+//the items to be printed.
+/*
+
+
+    %d → integer
+
+    %u → unsigned integer
+
+    %f → floating-point
+
+    %lf → double
+
+    %c → single character
+
+    %s → string
+
+    %x / %o → hexadecimal / octal
+
+    %e / %g → scientific notation
+*/
+#include <stdio.h>
+
+int main() {
+    int num = -42;
+    unsigned int unum = 42u;
+    float pi = 3.14159f;
+    double big = 12345.6789;
+    char ch = 'A';
+    char str[] = "Hello";
+
+    printf("Integer (%%d): %d\n", num);
+    printf("Unsigned (%%u): %u\n", unum);
+    printf("Float (%%f): %f\n", pi);
+    printf("Double (%%lf): %lf\n", big);
+    printf("Character (%%c): %c\n", ch);
+    printf("String (%%s): %s\n", str);
+    printf("Hexadecimal (%%x): %x\n", num);
+    printf("Octal (%%o): %o\n", num);
+    printf("Scientific notation (%%e): %e\n", pi);
+    printf("Shortest representation (%%g): %g\n", pi);
+
+    return 0;
+}
+/*
+Integer (%d): -42
+Unsigned (%u): 42
+Float (%f): 3.141590
+Double (%lf): 12345.678900
+Character (%c): A
+String (%s): Hello
+Hexadecimal (%x): ffffffd6
+Octal (%o): 37777777626
+Scientific notation (%e): 3.141590e+00
+Shortest representation (%g): 3.14159
+*/
+---------------------------------------------------------
+Q4.
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <source_file> <dest_file>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *src = fopen(argv[1], "r");
+    if (!src) {
+        perror("Error opening source file");
+        return 1;
+    }
+
+    FILE *dest = fopen(argv[2], "w");
+    if (!dest) {
+        perror("Error opening destination file");
+        fclose(src);
+        return 1;
+    }
+
+    int ch;
+    while ((ch = fgetc(src)) != EOF) {
+        fputc(ch, dest);
+    }
+
+    fclose(src);
+    fclose(dest);
+
+    printf("File copied successfully.\n");
+    return 0;
+}
+------------------
+make 2 files:
+input.txt
+---------
+add content with cat.
+
+make a new file output.,txt with touch command
+
+we can see 'File copied succesfully.' at the end of the copy
+---------------------------------
